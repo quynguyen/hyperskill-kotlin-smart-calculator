@@ -54,6 +54,128 @@ files:
         }
     }
   learner_created: false
+- name: src/calculator/Main.kt
+  visible: true
+  text: |
+    package calculator
+
+    import calculator.Expecting.OPERATOR
+    import calculator.Expecting.TERM
+
+    val variables = mutableMapOf<String, Int>()
+    val EXPRESSION = "\\s+".toRegex()
+    val IDENTIFIER = "[a-zA-Z]+".toRegex()
+    val ASSIGNMENT = """[a-zA-Z]+|\d+""".toRegex()
+
+    open class Result(val message: String)
+    open class Error(m: String) : Result(m)
+    open class UnknownVariable : Error("Unknown variable")
+    open class InvalidExpression : Error("Invalid expression")
+    open class Success(val value: Int) : Result("Success")
+
+    fun main() {
+        loop@ do {
+            val input = readLine()!!.trim()
+            when {
+                input.isBlank() -> continue@loop
+                input == "/exit" -> break@loop
+                input == "/help" -> println("The program calculates the sum of numbers")
+                input.startsWith("/") -> println("Unknown command")
+                input.contains("=") -> assignment(input)
+                else -> tryCalculate(input)
+            }
+        } while (true)
+        println("Bye!");
+    }
+
+    private fun tryCalculate(input: String) {
+        try {
+            when (val result = processExpression(input)) {
+                is Success -> println(result.value)
+                is Error -> println(result.message)
+                else -> println("Invalid expression")
+            }
+        } catch (e: Exception) {
+            println("Invalid expression")
+        }
+    }
+
+    private fun assignment(input: String) {
+        val assignment = input.split('=').map { it.trim() }
+        if (assignment.size != 2 || !ASSIGNMENT.matches(assignment[1])) {
+            println("Invalid assignment")
+            return
+        }
+        if (!IDENTIFIER.matches(assignment[0])) {
+            println("Invalid identifier")
+            return
+        }
+        try {
+            val (definition, expression) = assignment
+            val value = variables[expression] ?: expression.toInt()
+            variables[definition] = value
+        } catch (e: Exception) {
+            println("Unknown variable")
+        }
+        return
+    }
+
+    enum class Expecting {
+        OPERATOR,
+        TERM
+    }
+
+    private fun processExpression(input: String): Result {
+        var expecting: Expecting = TERM
+        var readTerm = false
+        val inputs = input.split(EXPRESSION)
+        var sum = 0
+        var signOfNextNumber = 1
+        for (term in inputs) {
+            var nextNumber = 0
+            loopTerm@ for ((j, c) in term.trim().withIndex()) {
+                when (c) {
+                    '-' -> {
+                        if (expecting == OPERATOR) {
+                            expecting = TERM
+                            readTerm = false
+                        }
+                        signOfNextNumber *= -1
+                    }
+                    '+' -> {
+                        if (expecting == OPERATOR) {
+                            expecting = TERM
+                            readTerm = false
+                        }
+                        continue@loopTerm
+                    }
+                    in 'a'..'z', in 'A'..'Z', in '0'..'9' -> {
+                        if (expecting == OPERATOR) return InvalidExpression()
+                        nextNumber = if (c.isDigit()) {
+                            term.substring(j).toInt() * signOfNextNumber
+                        } else {
+                            val expression = term.substring(j)
+                            if (!variables.containsKey(expression)) {
+                                return UnknownVariable()
+                            }
+                            variables[expression]!! * signOfNextNumber
+                        }
+                        signOfNextNumber = 1
+                        expecting = OPERATOR
+                        readTerm = true
+                        break@loopTerm
+                    }
+                    else -> return InvalidExpression()
+                }
+            }
+            sum += nextNumber
+        }
+        if (expecting == TERM && !readTerm) {
+            return InvalidExpression()
+        }
+        return Success(sum)
+    }
+  learner_created: true
 feedback_link: https://hyperskill.org/projects/88/stages/492/implement
-status: Unchecked
+status: Solved
 record: -1

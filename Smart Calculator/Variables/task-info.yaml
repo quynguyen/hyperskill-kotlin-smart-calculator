@@ -66,6 +66,86 @@ files:
         }
     }
   learner_created: false
+- name: src/calculator/Main.kt
+  visible: true
+  text: |
+    package calculator
+
+    import calculator.Expecting.OPERATOR
+    import calculator.Expecting.TERM
+
+    fun main() {
+        do {
+            val input = readLine()!!
+            if (input.isBlank()) continue
+            if (input.first() == '/') {
+                when (input.toLowerCase()) {
+                    "/exit" -> {
+                        println("Bye!"); return
+                    }
+                    "/help" -> println("The program calculates the sum of numbers")
+                    else -> println("Unknown command")
+                }
+            } else {
+                try {
+                    val result = processExpression(input)
+                    println(result)
+                } catch (e: Exception) {
+                    println("Invalid expression")
+                }
+            }
+        } while (true)
+    }
+
+    enum class Expecting {
+        OPERATOR,
+        TERM
+    }
+
+    private fun processExpression(input: String): Int {
+        var expecting: Expecting = TERM
+        var readTerm = false
+        val regex = "\\s+".toRegex()
+        val inputs = input.split(regex)
+        var sum = 0
+        var signOfNextNumber = 1
+        for (term in inputs) {
+            var nextNumber = 0
+            loopTerm@ for ((j, c) in term.withIndex()) {
+                when (c) {
+                    '-' -> {
+                        if (expecting == OPERATOR) {
+                            expecting = TERM
+                            readTerm = false
+                        }
+                        signOfNextNumber *= -1
+                    }
+                    '+' -> {
+                        if (expecting == OPERATOR) {
+                            expecting = TERM
+                            readTerm = false
+                        }
+                        continue@loopTerm
+                    }
+                    in '0'..'9' -> {
+                        if (expecting == OPERATOR) throw NumberFormatException()
+                        nextNumber = term.substring(j).toInt() * signOfNextNumber
+                        signOfNextNumber = 1
+                        expecting = OPERATOR
+                        readTerm = true
+                        break@loopTerm
+                    }
+                    else -> throw NumberFormatException()
+                }
+            }
+            sum += nextNumber
+        }
+        if (expecting == TERM && !readTerm) {
+            throw NumberFormatException()
+        }
+        return sum
+    }
+  learner_created: true
 feedback_link: https://hyperskill.org/projects/88/stages/491/implement
-status: Unchecked
-record: -1
+status: Solved
+record: 6

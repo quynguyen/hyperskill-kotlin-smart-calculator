@@ -1,0 +1,14 @@
+type: code
+files:
+- name: src/Task.kt
+  visible: true
+  text: |-
+    fun main() {
+        val words = mutableMapOf<? ,?>()
+
+        print(?)
+    }
+  learner_created: false
+feedback_link: https://hyperskill.org/learn/step/8030
+status: Solved
+record: -1

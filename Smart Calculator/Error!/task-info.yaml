@@ -46,6 +46,56 @@ files:
         }
     }
   learner_created: false
+- name: src/calculator/Main.kt
+  visible: true
+  text: |
+    package calculator
+
+    import java.util.*
+
+    fun main() {
+        val regex = "\\s+".toRegex()
+        loop@ while (true) {
+            var scanner = Scanner(System.`in`)
+            val input = scanner.nextLine()
+            try {
+                if (input.isBlank()) continue
+                if (input.first() == '/') {
+                    when (input.toLowerCase()) {
+                        "/exit" -> {
+                            println("Bye!")
+                            return
+                        }
+                        "/help" -> println("The program calculates the sum of numbers")
+                        else -> println("Invalid command")
+                    }
+                    continue
+                }
+                val inputs = input.split(regex)
+                var sum = 0;
+                var signOfNextNumber = 1
+                for (term in inputs) {
+                    var nextNumber = 0
+                    loop1@ for ((i, c) in term.withIndex()) {
+                        when (c) {
+                            '-' -> signOfNextNumber *= -1
+                            '+' -> continue@loop1
+                            in '0'..'9' -> {
+                                nextNumber = term.substring(i).toInt() * signOfNextNumber
+                                signOfNextNumber = 1
+                                break@loop1
+                            }
+                        }
+                    }
+                    sum += nextNumber
+                }
+                println(sum)
+            } catch (e: Exception) {
+                println("Unexpected error")
+            }
+        }
+    }
+  learner_created: true
 feedback_link: https://hyperskill.org/projects/88/stages/490/implement
-status: Unchecked
-record: -1
+status: Solved
+record: 5

@@ -41,6 +41,32 @@ files:
 
     }
   learner_created: false
+- name: src/calculator/Main.kt
+  visible: true
+  text: |
+    package calculator
+
+    import java.util.*
+
+    fun main() {
+        val scanner = Scanner(System.`in`)
+        while (true) {
+            val input = scanner.nextLine().split(" ").toTypedArray()
+            if (input[0].isBlank()) {
+                continue
+            }
+            if ("/exit" == input[0].toLowerCase()) {
+                println("Bye!")
+                return
+            }
+            val first = input[0].toInt()
+            if (input.size < 2)
+                println(first)
+            else
+                println(first + input[1].toInt())
+        }
+    }
+  learner_created: true
 feedback_link: https://hyperskill.org/projects/88/stages/488/implement
-status: Unchecked
-record: -1
+status: Solved
+record: 3
